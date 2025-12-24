@@ -221,10 +221,10 @@ export const CreatePassword = () => {
             <View style={styles.headerContainer}>
               <Text style={styles.headerText}>{t`Create Master Password`}</Text>
             </View>
-            <Text style={styles.boldText}
+            <Text
+              style={styles.boldText}
             >{t`The first thing to do is create a Master password to secure your account.  You’ll use this password to access PearPass. `}</Text>
-            <View
-              style={styles.inputContainer}>
+            <View style={styles.inputContainer}>
               <InputPasswordPearPass
                 placeholder={t`Enter Password`}
                 {...passwordRegisterProps}
@@ -239,8 +239,7 @@ export const CreatePassword = () => {
               />
             </View>
 
-            <View
-              style={styles.requirementsContainer}>
+            <View style={styles.requirementsContainer}>
               <Text style={styles.requirementsText}>
                 {t`Your password must be at least 8 characters long and include at least one of each:`}
               </Text>
@@ -277,17 +276,13 @@ export const CreatePassword = () => {
                       <View style={styles.checkboxInner} />
                     </View>
                   ) : (
-                    <View
-                      style={styles.checkboxEmpty}/>
+                    <View style={styles.checkboxEmpty} />
                   )}
                 </TouchableOpacity>
                 <View style={styles.textContainer}>
                   <Text style={styles.bottomText}>
                     {t`I have read and agree to the`}{' '}
-                    <Text
-                      style={styles.linkText}
-                      onPress={handleTermsPress}
-                    >
+                    <Text style={styles.linkText} onPress={handleTermsPress}>
                       {t`PearPass Application Terms of Use`}
                     </Text>
                     .

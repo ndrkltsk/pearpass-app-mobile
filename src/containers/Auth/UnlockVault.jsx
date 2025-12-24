@@ -115,16 +115,10 @@ export const UnlockVault = ({ vaultId }) => {
 
           <View style={{ width: '100%', gap: 10 }}>
             {isLoading ? (
-              <ActivityIndicator
-                size="small"
-                color={colors.primary400.mode1}
-              />
+              <ActivityIndicator size="small" color={colors.primary400.mode1} />
             ) : (
               <>
-                <ButtonPrimary
-                  stretch
-                  onPress={handleSubmit(onSubmit)}
-                >
+                <ButtonPrimary stretch onPress={handleSubmit(onSubmit)}>
                   {t`Continue`}
                 </ButtonPrimary>
 

@@ -135,16 +135,10 @@ export const EnterPassword = () => {
           />
           <View style={styles.buttonContainer}>
             {isLoading ? (
-              <ActivityIndicator
-                size="small"
-                color={colors.primary400.mode1}
-              />
+              <ActivityIndicator size="small" color={colors.primary400.mode1} />
             ) : (
               <>
-                <ButtonPrimary
-                  stretch
-                  onPress={handleSubmit(onSubmit)}
-                >
+                <ButtonPrimary stretch onPress={handleSubmit(onSubmit)}>
                   {t`Continue`}
                 </ButtonPrimary>
 

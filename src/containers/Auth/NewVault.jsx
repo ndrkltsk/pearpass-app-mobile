@@ -116,9 +116,7 @@ export const NewVault = () => {
         >
           <View style={styles.formContainer}>
             <View style={styles.headerBlock}>
-              <Text
-                style={styles.title}
-              >{t`Create New Vault`}</Text>
+              <Text style={styles.title}>{t`Create New Vault`}</Text>
               <Text
                 style={styles.subtitle}
               >{t`Create your ${!hasVaults ? 'first vault' : 'vault'} by giving it a name.${PROTECTED_VAULT_ENABLED ? ' You can also add a password to secure this vault for extra protection.' : ''}`}</Text>
@@ -189,10 +187,7 @@ export const NewVault = () => {
                 />
               ) : (
                 <>
-                  <ButtonPrimary
-                    stretch
-                    onPress={handleSubmit(onSubmit)}
-                  >
+                  <ButtonPrimary stretch onPress={handleSubmit(onSubmit)}>
                     {t`Continue`}
                   </ButtonPrimary>
                   <ButtonSecondary

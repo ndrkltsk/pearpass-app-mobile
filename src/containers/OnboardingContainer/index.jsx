@@ -262,13 +262,10 @@ export const OnboardingContainer = ({
       </View>
       <View style={styles.actionButtonsContainer}>
         <TouchableOpacity onPress={onContinue} style={styles.continueButton}>
-          <Text style={styles.continueButtonText}
-          >{t`Continue`}</Text>
+          <Text style={styles.continueButtonText}>{t`Continue`}</Text>
         </TouchableOpacity>
         {currentStep !== SCREENS[SCREENS.length - 1] && (
-          <TouchableOpacity onPress={onSkip}
-            style={styles.skipButton}
-          >
+          <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
             <Text style={styles.skipButtonText}>{t`Skip`}</Text>
           </TouchableOpacity>
         )}

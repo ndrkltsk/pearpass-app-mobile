@@ -58,18 +58,21 @@ export const SelectVaultType = () => {
         {!vaultsData?.length ? (
           <View style={styles.textWrapper}>
             <Text style={styles.headerText}>{t`Enter Master Password`}</Text>
-            <Text style={styles.subHeaderText}>{t`Now create a secure vault or load an existing one to get started.`}
+            <Text style={styles.subHeaderText}>
+              {t`Now create a secure vault or load an existing one to get started.`}
             </Text>
           </View>
         ) : (
           <View style={styles.vaultsSection}>
-            <Text style={styles.headerText}>{t`Select a vault, create a new one or load another one`}</Text>
+            <Text
+              style={styles.headerText}
+            >{t`Select a vault, create a new one or load another one`}</Text>
 
             <ScrollView
               style={styles.vaultsList}
               showsVerticalScrollIndicator={false}
             >
-              {sortedVaults?.map((vault, index) => (
+              {sortedVaults?.map((vault) => (
                 <View key={vault.id} style={styles.vaultItemWrapper}>
                   <ListItem
                     onPress={() => handleVaultSelect(vault.id)}
@@ -85,10 +88,7 @@ export const SelectVaultType = () => {
       </View>
 
       <View style={styles.bottomSection}>
-        <ButtonPrimary
-          stretch
-          onPress={handleCreateVault}
-        >
+        <ButtonPrimary stretch onPress={handleCreateVault}>
           {t`Create a new vault`}
         </ButtonPrimary>
 
