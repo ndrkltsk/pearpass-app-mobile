@@ -124,30 +124,32 @@ export const EnterPassword = () => {
           </View>
 
           <View style={styles.inputContainer}>
-            <View testID="enter-password-input">
+            testID="enter-password-input"
               <InputPasswordPearPass
                 placeholder={t`Master password`}
                 {...register('password')}
                 isPassword
                 errorTestID="enter-password-input-error"
               />
-            </View>
           </View>
+          
           <View testID="enter-password-warning">
             <AppWarning
+              testID="enter-password-warning-text"
               warning={t`Don't forget your master password. It's the only way to access your vault. We can't help recover it. Back it up securely.`}
             />
           </View>
+          
           <View style={styles.buttonContainer}>
             {isLoading ? (
               <ActivityIndicator size="small" color={colors.primary400.mode1} />
             ) : (
               <>
-                <View testID="enter-password-continue-button">
-                  <ButtonPrimary stretch onPress={handleSubmit(onSubmit)}>
+                  <ButtonPrimary
+                    testID="enter-password-continue-button"
+                    stretch onPress={handleSubmit(onSubmit)}>
                     {t`Continue`}
                   </ButtonPrimary>
-                </View>
 
                 <ButtonBiometricLogin
                   onBiometricLogin={(encryptionData) =>
