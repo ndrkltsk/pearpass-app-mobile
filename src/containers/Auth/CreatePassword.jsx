@@ -227,20 +227,20 @@ export const CreatePassword = () => {
             >{t`The first thing to do is create a Master password to secure your account.  You'll use this password to access PearPass. `}</Text>
             <View style={styles.inputContainer}>
                 <InputPasswordPearPass
+                  testID="create-password-input"
+                  errorTestID="create-password-input-error"
                   placeholder={t`Enter Password`}
                   {...passwordRegisterProps}
                   onChange={handlePasswordChange}
                   isPassword
-                  testID="create-password-input"
-                  errorTestID="create-password-input-error"
                 />
 
                 <InputPasswordPearPass
+                  testID="create-password-confirm-input"
+                  errorTestID="create-password-confirm-input-error"
                   placeholder={t`Confirm Password`}
                   {...register('passwordConfirm')}
                   isPassword
-                  "create-password-confirm-input"
-                  errorTestID="create-password-confirm-input-error"
                 />
             </View>
 
