@@ -135,7 +135,6 @@ export const EnterPassword = () => {
       
             <AppWarning
               testID="enter-password-warning"
-              testID="enter-password-warning-text"
               warning={t`Don't forget your master password. It's the only way to access your vault. We can't help recover it. Back it up securely.`}
             />
           
