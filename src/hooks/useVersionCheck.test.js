@@ -49,6 +49,12 @@ describe('compareVersions', () => {
   it('should handle non-numeric characters in current version', () => {
     expect(compareVersions('v1.0.0', '1.0.1')).toBe(true)
     expect(compareVersions('1.0.0-beta', '1.0.1')).toBe(true)
+    expect(compareVersions('v1.2.3', '1.2.4')).toBe(true)
+    expect(compareVersions('v1.2.3', '1.3.0')).toBe(true)
+    expect(compareVersions('1.2.3-beta', '1.2.4')).toBe(true)
+    expect(compareVersions('1.2.3-beta', '1.3.0')).toBe(true)
+    expect(compareVersions('v1.2.3-beta', '1.2.4')).toBe(true)
+    expect(compareVersions('v1.2.3-alpha', '1.2.3')).toBe(true)
   })
 })
 

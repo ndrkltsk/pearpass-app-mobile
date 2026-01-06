@@ -187,9 +187,12 @@ export const useGetMultipleFiles = ({
 
       const results = await Promise.allSettled(promises)
       results.forEach((result, index) => {
-          if (result.status === 'rejected') {
-            logger.error(`Failed to fetch files for ${fieldNames[index]}`, result.reason)
-          }
+        if (result.status === 'rejected') {
+          logger.error(
+            `Failed to fetch files for ${fieldNames[index]}`,
+            result.reason
+          )
+        }
       })
     } catch (error) {
       logger.error('Error refetching files:', error)
