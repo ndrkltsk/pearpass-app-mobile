@@ -38,7 +38,59 @@ const config_plugins_1 = require("@expo/config-plugins");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const DARK_BACKGROUND_COLOR = '#232323';
-const withSplashScreenAndroid = (config) => {
+// Use withAndroidStyles to properly modify styles.xml through Expo's pipeline
+const withSplashStyles = (config) => {
+    return (0, config_plugins_1.withAndroidStyles)(config, (cfg) => {
+        const styles = cfg.modResults;
+        // Ensure styles.resources.style exists
+        if (!styles.resources.style) {
+            styles.resources.style = [];
+        }
+        // Find Theme.App.SplashScreen style
+        const splashThemeIndex = styles.resources.style.findIndex((s) => s.$.name === 'Theme.App.SplashScreen');
+        if (splashThemeIndex !== -1) {
+            // Modify existing Theme.App.SplashScreen
+            // Change parent from Theme.SplashScreen to AppTheme
+            styles.resources.style[splashThemeIndex].$.parent = 'AppTheme';
+            // Replace all items with our splash config
+            styles.resources.style[splashThemeIndex].item = [
+                { $: { name: 'android:windowBackground' }, _: '@drawable/splash_fullscreen' },
+                { $: { name: 'android:statusBarColor' }, _: DARK_BACKGROUND_COLOR },
+                { $: { name: 'android:navigationBarColor' }, _: DARK_BACKGROUND_COLOR }
+            ];
+        }
+        else {
+            // Create new Theme.App.SplashScreen
+            styles.resources.style.push({
+                $: { name: 'Theme.App.SplashScreen', parent: 'AppTheme' },
+                item: [
+                    { $: { name: 'android:windowBackground' }, _: '@drawable/splash_fullscreen' },
+                    { $: { name: 'android:statusBarColor' }, _: DARK_BACKGROUND_COLOR },
+                    { $: { name: 'android:navigationBarColor' }, _: DARK_BACKGROUND_COLOR }
+                ]
+            });
+        }
+        // Find AppTheme style and update status bar color
+        const appThemeIndex = styles.resources.style.findIndex((s) => s.$.name === 'AppTheme');
+        if (appThemeIndex !== -1) {
+            const appTheme = styles.resources.style[appThemeIndex];
+            if (!appTheme.item) {
+                appTheme.item = [];
+            }
+            // Find or update android:statusBarColor
+            const statusBarIndex = appTheme.item.findIndex((i) => i.$.name === 'android:statusBarColor');
+            if (statusBarIndex !== -1) {
+                appTheme.item[statusBarIndex]._ = DARK_BACKGROUND_COLOR;
+            }
+            else {
+                appTheme.item.push({ $: { name: 'android:statusBarColor' }, _: DARK_BACKGROUND_COLOR });
+            }
+        }
+        return cfg;
+    });
+};
+// Use withDangerousMod for copying files
+const withSplashFiles = (config) => {
     return (0, config_plugins_1.withDangerousMod)(config, ['android', async (cfg) => {
             const packageName = cfg.android?.package || 'com.pears.pass';
             const packagePath = packageName.replace(/\./g, '/');
@@ -76,6 +128,17 @@ const withSplashScreenAndroid = (config) => {
             if (fs.existsSync(drawableSrc)) {
                 await fs.promises.copyFile(drawableSrc, drawableDest);
             }
+            // Create splash_fullscreen.xml drawable for native splash screen
+            const splashFullscreenXml = `<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_background"/>
+    <item>
+        <bitmap
+            android:gravity="fill"
+            android:src="@drawable/custom_splash_screen"/>
+    </item>
+</layer-list>`;
+            await fs.promises.writeFile(path.join(drawableDir, 'splash_fullscreen.xml'), splashFullscreenXml);
             // Fix colors.xml to use dark background colors
             const colorsPath = path.join(androidDir, 'app/src/main/res/values/colors.xml');
             if (fs.existsSync(colorsPath)) {
@@ -93,15 +156,31 @@ const withSplashScreenAndroid = (config) => {
                 }
                 await fs.promises.writeFile(colorsPath, colorsContent);
             }
-            // Fix styles.xml to use dark status bar color
-            const stylesPath = path.join(androidDir, 'app/src/main/res/values/styles.xml');
-            if (fs.existsSync(stylesPath)) {
-                let stylesContent = await fs.promises.readFile(stylesPath, 'utf-8');
-                // Fix statusBarColor
-                stylesContent = stylesContent.replace(/<item name="android:statusBarColor">#[0-9A-Fa-f]+<\/item>/, `<item name="android:statusBarColor">${DARK_BACKGROUND_COLOR}</item>`);
-                await fs.promises.writeFile(stylesPath, stylesContent);
+            // Override ic_launcher_background.xml to use custom_splash_screen
+            const launcherBgPath = path.join(drawableDir, 'ic_launcher_background.xml');
+            const launcherBgContent = `<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:drawable="@color/splashscreen_background"/>
+  <item>
+    <bitmap android:gravity="fill" android:src="@drawable/custom_splash_screen"/>
+  </item>
+</layer-list>`;
+            await fs.promises.writeFile(launcherBgPath, launcherBgContent);
+            // Delete all splashscreen_logo.png files
+            const densities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi'];
+            for (const density of densities) {
+                const logoPath = path.join(androidDir, `app/src/main/res/drawable-${density}/splashscreen_logo.png`);
+                if (fs.existsSync(logoPath)) {
+                    await fs.promises.unlink(logoPath);
+                }
             }
             return cfg;
         }]);
+};
+const withSplashScreenAndroid = (config) => {
+    // First apply file operations
+    config = withSplashFiles(config);
+    // Then apply styles modifications through proper Expo pipeline
+    config = withSplashStyles(config);
+    return config;
 };
 exports.withSplashScreenAndroid = withSplashScreenAndroid;

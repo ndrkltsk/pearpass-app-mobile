@@ -80,18 +80,11 @@ const withSplashScreenAssets: ConfigPlugin = (config) => {
     const projectDir = path.join(iosDir, projectName);
     const imagesDir = path.join(projectDir, 'Images.xcassets');
 
-    // Copy SplashImage.imageset
+    // Copy SplashImage.imageset (full-screen splash image)
     const splashImageSrc = path.join(templateDir, 'SplashImage.imageset');
     const splashImageDest = path.join(imagesDir, 'SplashImage.imageset');
     if (fs.existsSync(splashImageSrc)) {
       await copyDirectory(splashImageSrc, splashImageDest);
-    }
-
-    // Copy SplashScreenLogo.imageset
-    const splashLogoSrc = path.join(templateDir, 'SplashScreenLogo.imageset');
-    const splashLogoDest = path.join(imagesDir, 'SplashScreenLogo.imageset');
-    if (fs.existsSync(splashLogoSrc)) {
-      await copyDirectory(splashLogoSrc, splashLogoDest);
     }
 
     // Copy SplashScreenBackground.colorset
