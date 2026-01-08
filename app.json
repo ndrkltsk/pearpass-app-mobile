@@ -117,7 +117,24 @@
     "extra": {
       "appVersion": "1.1.2",
       "eas": {
-        "projectId": "f6132c16-1ff8-446a-8012-5271ec0e16e5"
+        "projectId": "f6132c16-1ff8-446a-8012-5271ec0e16e5",
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "PearPassAutoFillExtension",
+                  "bundleIdentifier": "com.noxtton.pearpass.PearPassAutoFillExtension",
+                  "entitlements": {
+                    "com.apple.developer.authentication-services.autofill-credential-provider": true,
+                    "com.apple.security.application-groups": ["group.com.noxtton.pearpass"],
+                    "keychain-access-groups": ["$(AppIdentifierPrefix)com.noxtton.pearpass"]
+                  }
+                }
+              ]
+            }
+          }
+        }
       }
     }
   }

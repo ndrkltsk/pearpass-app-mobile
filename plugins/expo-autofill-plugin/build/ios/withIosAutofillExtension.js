@@ -197,11 +197,13 @@ const withIosAutofillExtension = (config, options) => {
         const buildNumber = cfg.ios?.buildNumber || '1';
         // Set build settings for extension target
         const buildSettings = {
-            INFOPLIST_FILE: `"${extensionFolder}/Info.plist"`,
-            CODE_SIGN_ENTITLEMENTS: `"${extensionFolder}/PearPassAutoFillExtension.entitlements"`,
+            INFOPLIST_FILE: `${extensionFolder}/Info.plist`,
+            CODE_SIGN_ENTITLEMENTS: `${extensionFolder}/PearPassAutoFillExtension.entitlements`,
+            CODE_SIGN_STYLE: 'Automatic',
             DEVELOPMENT_TEAM: teamId,
+            GENERATE_INFOPLIST_FILE: 'YES',
             IPHONEOS_DEPLOYMENT_TARGET: deploymentTarget,
-            SWIFT_OBJC_BRIDGING_HEADER: `"${extensionFolder}/PearPassAutoFillExtension-Bridging-Header.h"`,
+            SWIFT_OBJC_BRIDGING_HEADER: `${extensionFolder}/PearPassAutoFillExtension-Bridging-Header.h`,
             SWIFT_VERSION: '5.0',
             TARGETED_DEVICE_FAMILY: '"1,2"',
             SKIP_INSTALL: 'YES',
