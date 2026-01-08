@@ -7,20 +7,18 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "credentialsSource": "local",
       "node": "22.12.0"
     },
     "preview": {
       "autoIncrement": true,
-      "credentialsSource": "local",
       "node": "22.12.0"
     },
     "production": {
       "autoIncrement": true,
-      "credentialsSource": "local",
-      "node": "22.12.0",
       "ios": {
         "scheme": "pearpassappmobile"
+      },
+      "android": {
       }
     }
   },
@@ -28,15 +26,11 @@
     "production": {
       "android": {
         "track": "internal",
-        "releaseStatus": "completed",
+        "releaseStatus": "draft",
         "serviceAccountKeyPath": "google-service-account.json"
       },
       "ios": {
-        "ascAppId": "6752954830",
-        "ascApiKeyPath": "apple-asc-api-key.p8",
-        "ascApiKeyIssuerId": "2067dae8-140d-4016-9a2b-d6ea80a20708",
-        "ascApiKeyId": "S3AG2UXSC5",
-        "appleTeamId": "43QFHSJ5QR"
+        "appleTeamId": "77ZH693K52"
       }
     }
   }
