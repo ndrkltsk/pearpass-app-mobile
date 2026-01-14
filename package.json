@@ -12,6 +12,8 @@
     "lint:fix": "eslint --fix ./src",
     "lint": "eslint ./src",
     "prepare": "husky",
+    "postinstall": "node scripts/build-plugins.cjs",
+    "build-plugins": "node scripts/build-plugins.cjs",
     "test": "jest",
     "bundle:android": "bare-pack -p android --linked --out bundles/app-android.bundle.js node_modules/pearpass-lib-vault-core/src/worklet/app.js",
     "bundle:ios": "bare-pack -p ios --linked --out bundles/app-ios.bundle.js node_modules/pearpass-lib-vault-core/src/worklet/app.js",
@@ -27,7 +29,7 @@
     "custom-prebuild:android": "node scripts/custom-expo-prebuild.cjs android",
     "update-submodules": "bash scripts/update-submodules.sh",
     "eas-build-pre-install": "node -v && npm -v && npm install --package-lock-only --ignore-scripts --no-audit --no-fund",
-    "eas-build-post-install": "npm run bundle-bare && npm run lingui:extract && npm run lingui:compile"
+    "eas-build-post-install": "npm run build-plugins && npm run bundle-bare && npm run lingui:extract && npm run lingui:compile"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",

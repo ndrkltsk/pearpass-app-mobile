@@ -55,3 +55,6 @@ yalc.lock
 bundles/
 
 src/locales/
+
+# Plugin build outputs
+plugins/*/build/
