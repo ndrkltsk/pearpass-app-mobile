@@ -90,34 +90,6 @@ npm run ios      # For iOS
 npm run android  # For Android
 ```
 
-## Prebuild Instructions
-
-⚠️ **Important**: Always use custom prebuild scripts instead of `expo prebuild` directly.
-
-### Available Scripts:
-
-- `npm run custom-prebuild` - Standard prebuild for both platforms
-- `npm run custom-prebuild:clean` - Clean prebuild (recommended)
-- `npm run custom-prebuild:ios` - iOS only
-- `npm run custom-prebuild:android` - Android only
-
-### Why use custom scripts?
-
-These scripts automatically handle custom splash screen configuration during the prebuild process.
-
-### Usage:
-
-```bash
-# Most common - clean prebuild for both platforms
-npm run custom-prebuild:clean
-
-# iOS only
-npm run custom-prebuild:ios
-
-# Android only
-npm run custom-prebuild:android
-```
-
 ## Testing
 
 ### Unit Testing
