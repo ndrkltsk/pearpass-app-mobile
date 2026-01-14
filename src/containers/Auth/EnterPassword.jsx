@@ -49,6 +49,10 @@ export const EnterPassword = () => {
       setIsLoading(true)
       await logIn({ password: value.password })
       await initVaults({ password: value.password })
+      // Refresh master password status after successful login to clear any stale
+      // lock state in Redux. This prevents the Welcome screen from showing
+      // a false lock due to race conditions during initialization.
+      await refreshMasterPasswordStatus()
       navigation.replace('Welcome', { state: NAVIGATION_ROUTES.SELECT_OR_LOAD })
       setIsLoading(false)
     } catch (error) {
@@ -88,7 +92,11 @@ export const EnterPassword = () => {
       const { ciphertext, nonce, hashedPassword } = encryptionData
       await initVaults({ ciphertext, nonce, hashedPassword })
 
-      navigation.replace('Welcome', { state: 'selectOrLoad' })
+      // Refresh master password status after successful biometric login to clear
+      // any stale lock state in Redux. This prevents the Welcome screen from
+      // showing a false lock due to race conditions during initialization.
+      await refreshMasterPasswordStatus()
+      navigation.replace('Welcome', { state: NAVIGATION_ROUTES.SELECT_OR_LOAD })
       setIsLoading(false)
     } catch (error) {
       Toast.show({

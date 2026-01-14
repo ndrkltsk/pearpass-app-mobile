@@ -48,12 +48,23 @@ export const Welcome = ({ route }) => {
   } = useUserData()
 
   const getState = () => {
-    if (masterPasswordStatus?.isLocked) {
-      return NAVIGATION_ROUTES.SCREEN_LOCKED
-    }
-
+    // Check route params FIRST to prevent stale Redux state from overriding
+    // explicit navigation intent. This is important because:
+    // 1. When navigating after successful auth (biometric/password), route.params.state
+    //    indicates the intended destination (e.g., 'selectOrLoad')
+    // 2. The masterPasswordStatus in Redux may be stale due to race conditions during
+    //    encryption re-initialization, which can falsely show isLocked: true
+    // 3. If the lock screen should be shown, it's explicitly passed via route params
+    //    (SCREEN_LOCKED) by the authentication flow when it detects actual lockout
     if (route?.params?.state) {
       return route.params.state
+    }
+
+    // Only check masterPasswordStatus when no explicit navigation state is provided.
+    // This handles the case when the user opens the app fresh and needs to be shown
+    // the lock screen based on actual rate limit status.
+    if (masterPasswordStatus?.isLocked) {
+      return NAVIGATION_ROUTES.SCREEN_LOCKED
     }
 
     const state = hasPasswordSet
