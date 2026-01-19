@@ -98,11 +98,7 @@ export const EnterPassword = () => {
       const { ciphertext, nonce, hashedPassword } = encryptionData
       await initVaults({ ciphertext, nonce, hashedPassword })
 
-      // Refresh master password status after successful biometric login to clear
-      // any stale lock state in Redux. This prevents the Welcome screen from
-      // showing a false lock due to race conditions during initialization.
-      await refreshMasterPasswordStatus()
-      navigation.replace('Welcome', { state: NAVIGATION_ROUTES.SELECT_OR_LOAD })
+      navigation.replace('Welcome', { state: 'selectOrLoad' })
       setIsLoading(false)
     } catch (error) {
       Toast.show({
