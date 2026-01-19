@@ -56,6 +56,12 @@ export async function copyAndProcessSourceFiles(
           new RegExp(`import ${templateEscaped}`, 'g'),
           `import ${packageName}`
         );
+
+        // Replace fully qualified class references (e.g., com.pears.pass.autofill.utils.SecureBufferUtils)
+        content = content.replace(
+          new RegExp(`${templateEscaped}\\.`, 'g'),
+          `${packageName}.`
+        );
       }
 
       await fs.promises.writeFile(destPath, content);
