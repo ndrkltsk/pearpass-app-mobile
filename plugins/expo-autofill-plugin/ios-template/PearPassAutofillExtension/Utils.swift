@@ -51,13 +51,11 @@ enum Utils {
         guard let sharedContainerURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: "$(APP_GROUP_IDENTIFIER)"
         ) else {
-            print("[Utils] Failed to get shared container URL")
             return nil
         }
-        
+
         // Return the path with the pearpass subdirectory
         let storagePath = "file://" + sharedContainerURL.path + "/pearpass"
-        print("[Utils] Generated storage path: \(storagePath)")
         return storagePath
     }
     

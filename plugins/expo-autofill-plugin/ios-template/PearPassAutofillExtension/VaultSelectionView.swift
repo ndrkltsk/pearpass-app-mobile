@@ -97,28 +97,25 @@ struct VaultSelectionView: View {
     }
 
     // MARK: - Private Methods
-    
+
     private func onVaultPress(_ vault: Vault) {
-        print("VaultSelectionView: Vault pressed - \(vault.name) (ID: \(vault.id))")
-        
+
         // Check if vault client is available
         guard let client = vaultClient else {
-            print("VaultSelectionView: Vault client not available")
             viewModel.selectVault(vault)
             return
         }
-        
+
         // Check if the vault is protected using the already stored vaults
         Task {
             do {
                 let isProtected = try await client.checkVaultIsProtected(
-                    vaultId: vault.id, 
+                    vaultId: vault.id,
                     savedVaults: viewModel.vaults
                 )
-                
+
                 await MainActor.run {
-                    print("VaultSelectionView: Vault \(vault.name) is protected: \(isProtected)")
-                    
+
                     // Navigate based on protection status
                     viewModel.selectedVault = vault
                     if isProtected {
@@ -129,10 +126,9 @@ struct VaultSelectionView: View {
                         viewModel.currentFlow = .credentialsList(vault: vault)
                     }
                 }
-                
+
             } catch {
                 await MainActor.run {
-                    print("VaultSelectionView: Error checking vault protection: \(error.localizedDescription)")
                     // On error, assume vault is protected and go to password view for safety
                     viewModel.selectedVault = vault
                     viewModel.currentFlow = .vaultPassword(vault: vault)
