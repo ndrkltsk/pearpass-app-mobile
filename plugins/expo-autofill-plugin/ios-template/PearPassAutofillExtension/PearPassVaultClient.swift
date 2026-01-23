@@ -39,12 +39,22 @@ import Foundation
         case ENCRYPTION_ENCRYPT_VAULT_WITH_KEY = 30
         case ENCRYPTION_DECRYPT_VAULT_KEY = 31
         case ENCRYPTION_GET_DECRYPTION_KEY = 32
-        case CLOSE = 33
+        case CLOSE_ALL_INSTANCES = 33
         case CANCEL_PAIR_ACTIVE_VAULT = 34
+        case BLIND_MIRRORS_GET = 35
+        case BLIND_MIRRORS_ADD = 36
+        case BLIND_MIRROR_REMOVE = 37
+        case BLIND_MIRRORS_ADD_DEFAULTS = 38
+        case BLIND_MIRRORS_REMOVE_ALL = 39
+        case MASTER_PASSWORD_STATUS = 40
+        case RECORD_FAILED_MASTER_PASSWORD = 41
+        case RESET_FAILED_ATTEMPTS = 42
         case MASTER_PASSWORD_CREATE = 43
         case MASTER_PASSWORD_INIT_WITH_PASSWORD = 44
         case MASTER_PASSWORD_UPDATE = 45
         case MASTER_PASSWORD_INIT_WITH_CREDENTIALS = 46
+        case BACKGROUND_BEGIN = 47
+        case BACKGROUND_END = 48
         case SET_CORE_STORE_OPTIONS = 49
     }
     
@@ -84,34 +94,36 @@ import Foundation
     }
     
     // MARK: - Initialization
-    
-    init(storagePath: String? = nil, debugMode: Bool = false) {
+
+    /// Initialize the vault client
+    /// - Parameters:
+    ///   - storagePath: Custom storage path (optional)
+    ///   - debugMode: Enable debug logging
+    ///   - readOnly: Set to true for credential lookup, false for passkey registration
+    init(storagePath: String? = nil, debugMode: Bool = false, readOnly: Bool = true) {
         self.debugMode = debugMode
         self.storagePath = storagePath
         super.init()
-        
+
         // Get the storage path using the utility function
         guard let pathToUse = Utils.getVaultStoragePath(customPath: storagePath) else {
             logError("Failed to determine storage path")
             return
         }
-        
+
         // Store the initialization task so we can await it later
         self.initializationTask = Task {
             do {
                 // First initialize the worklet
                 try await initializeWorklet()
 
-                // Then set the storage path
+                // Set storage path and core store options BEFORE any vault initialization
+                // These must be set before Corestore is created as options can't be changed after
                 try await setStoragePath(pathToUse)
+                try await setCoreStoreOptions(readOnly: readOnly)
 
-                // Set readOnly mode for autofill extension to avoid file lock conflicts
-                log("Setting core store options: readOnly=true")
-                try await setCoreStoreOptions(readOnly: true)
-
-                log("Vault client fully initialized with readOnly mode")
+                log("Vault client fully initialized (readOnly: \(readOnly))")
             } catch {
-                logError("Failed to initialize: \(error.localizedDescription)")
                 throw error
             }
         }
@@ -218,13 +230,15 @@ import Foundation
         log("Storage path set to: \(path)")
     }
 
-    /// Sets core store options (e.g., readOnly mode for autofill extension)
-    func setCoreStoreOptions(readOnly: Bool) async throws {
-        let coreStoreOptions: [String: Any] = ["readOnly": readOnly]
-        _ = try await sendRequest(command: API.SET_CORE_STORE_OPTIONS.rawValue, data: ["coreStoreOptions": coreStoreOptions])
+    /// Sets the core store options
+    /// IMPORTANT: Must be called BEFORE any vault initialization (vaultsInit, encryptionInit, activeVaultInit)
+    /// Once Corestore is initialized, these options cannot be changed
+    /// - Parameter readOnly: When true, prevents write operations to the vault
+    private func setCoreStoreOptions(readOnly: Bool) async throws {
+        _ = try await sendRequest(command: API.SET_CORE_STORE_OPTIONS.rawValue, data: ["readOnly": readOnly])
         log("Core store options set: readOnly=\(readOnly)")
     }
-    
+
     // MARK: - Master Vault Methods
 
     /// Initializes the vault with an encryption key and hashed password
@@ -1104,7 +1118,7 @@ import Foundation
             }
 
             // Send close command to worklet
-            _ = try await sendRequestToHelper(helper: helper, command: API.CLOSE.rawValue)
+            _ = try await sendRequestToHelper(helper: helper, command: API.CLOSE_ALL_INSTANCES.rawValue)
             log("Close command sent successfully")
         } catch {
             logError("Failed to send close command (will shutdown anyway): \(error.localizedDescription)")
@@ -1164,9 +1178,159 @@ import Foundation
             }
         }
     }
-    
+
+    // MARK: - Passkey Methods
+
+    /// Save a passkey credential to the active vault
+    /// - Parameters:
+    ///   - vaultId: The vault ID to save to (must be the currently active vault)
+    ///   - credential: The passkey credential to save
+    ///   - name: Display name for the passkey record
+    ///   - userName: Username associated with the passkey
+    ///   - websites: Associated websites/domains
+    /// - Returns: The record ID of the saved passkey
+    func savePasskey(
+        vaultId: String,
+        credential: PasskeyCredential,
+        name: String,
+        userName: String,
+        websites: [String]
+    ) async throws -> String {
+        log("Saving passkey for websites: \(websites)")
+
+        // Generate a unique record ID
+        let recordId = UUID().uuidString
+        let now = Int64(Date().timeIntervalSince1970 * 1000)  // Milliseconds timestamp
+
+        // Format websites with https:// prefix if not present (matches browser extension)
+        let formattedWebsites = websites.map { website -> String in
+            if website.hasPrefix("http://") || website.hasPrefix("https://") {
+                return website
+            }
+            return "https://\(website)"
+        }
+
+        // Build the record data structure to match browser extension format exactly
+        // Browser extension structure: { id, version, type: "login", vaultId, data: {...}, folder, isFavorite, createdAt, updatedAt }
+        let recordData: [String: Any] = [
+            "id": recordId,
+            "version": 1,
+            "type": "login",  // Browser extension uses "login" for all records including passkeys
+            "vaultId": vaultId,
+            "data": [
+                "title": name,
+                "username": userName,
+                "password": "",  // Empty for passkeys
+                "passwordUpdatedAt": now,
+                "credential": credential.toDictionary(),
+                "note": "",
+                "websites": formattedWebsites,
+                "customFields": [] as [Any],
+                "attachments": [] as [Any]
+            ] as [String: Any],
+            "folder": NSNull(),
+            "isFavorite": false,
+            "createdAt": now,
+            "updatedAt": now
+        ]
+
+        // Save to active vault using the record/ prefix
+        let key = "record/\(recordId)"
+        _ = try await sendRequest(
+            command: API.ACTIVE_VAULT_ADD.rawValue,
+            data: ["key": key, "data": recordData]
+        )
+
+        log("Passkey saved with ID: \(recordId)")
+        return recordId
+    }
+
+    /// List all passkeys in the active vault, optionally filtered by RP ID
+    /// - Parameter rpId: Optional relying party ID to filter by
+    /// - Returns: Array of passkey credentials
+    func listPasskeys(rpId: String? = nil) async throws -> [PasskeyCredential] {
+        log("Listing passkeys" + (rpId != nil ? " for RP: \(rpId!)" : ""))
+
+        // Get all records from active vault
+        let records = try await activeVaultList(filterKey: "record/")
+
+        // Filter for passkey records and extract credentials
+        var passkeys: [PasskeyCredential] = []
+
+        for record in records {
+            // Get the data wrapper
+            let recordData = record["data"] as? [String: Any] ?? record
+
+            // Check for credential field with _privateKeyBuffer (browser extension format)
+            guard let credentialDict = recordData["credential"] as? [String: Any],
+                  credentialDict["_privateKeyBuffer"] != nil,
+                  let credential = PasskeyCredential.fromDictionary(credentialDict) else {
+                continue
+            }
+
+            // Filter by RP ID if specified (using websites from parent record)
+            if let filterRpId = rpId {
+                let websites = recordData["websites"] as? [String] ?? []
+
+                // Check if RP ID matches
+                let matches = websites.contains(where: { normalizedDomainMatch($0, filterRpId) })
+
+                if matches {
+                    passkeys.append(credential)
+                }
+            } else {
+                passkeys.append(credential)
+            }
+        }
+
+        log("Found \(passkeys.count) passkeys")
+        return passkeys
+    }
+
+    /// Get a specific passkey by credential ID
+    /// - Parameter credentialId: The credential ID (Base64URL encoded)
+    /// - Returns: The passkey credential if found
+    func getPasskey(credentialId: String) async throws -> PasskeyCredential? {
+        log("Getting passkey with ID: \(credentialId)")
+
+        let passkeys = try await listPasskeys()
+
+        return passkeys.first { $0.id == credentialId }
+    }
+
+    /// Delete a passkey from the active vault
+    /// - Parameter recordId: The record ID of the passkey to delete
+    func deletePasskey(recordId: String) async throws {
+        log("Deleting passkey record: \(recordId)")
+
+        let key = "record/\(recordId)"
+        _ = try await sendRequest(
+            command: API.ACTIVE_VAULT_REMOVE.rawValue,
+            data: ["key": key]
+        )
+
+        log("Passkey deleted")
+    }
+
+    /// Helper to check if two domains match (handles subdomains)
+    private func normalizedDomainMatch(_ domain1: String, _ domain2: String) -> Bool {
+        let d1 = domain1.lowercased()
+            .replacingOccurrences(of: "https://", with: "")
+            .replacingOccurrences(of: "http://", with: "")
+            .replacingOccurrences(of: "www.", with: "")
+            .components(separatedBy: "/").first ?? ""
+
+        let d2 = domain2.lowercased()
+            .replacingOccurrences(of: "https://", with: "")
+            .replacingOccurrences(of: "http://", with: "")
+            .replacingOccurrences(of: "www.", with: "")
+            .components(separatedBy: "/").first ?? ""
+
+        return d1 == d2 || d1.hasSuffix(".\(d2)") || d2.hasSuffix(".\(d1)")
+    }
+
     // MARK: - Helper Methods
-    
+
     private func log(_ message: String) {
         if debugMode {
             print("[PearPassVaultClient] \(message)")
