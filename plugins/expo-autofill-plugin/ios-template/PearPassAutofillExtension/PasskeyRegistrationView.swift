@@ -35,6 +35,7 @@ struct PasskeyRegistrationView: View {
 
     enum RegistrationStep {
         case initializing
+        case initializationError
         case masterPassword
         case vaultSelection
         case vaultPassword
@@ -51,6 +52,9 @@ struct PasskeyRegistrationView: View {
             switch currentStep {
             case .initializing:
                 loadingView
+
+            case .initializationError:
+                MissingConfigurationView(onCancel: onCancel)
 
             case .masterPassword:
                 MasterPasswordView(
@@ -170,6 +174,7 @@ struct PasskeyRegistrationView: View {
             } catch {
                 await MainActor.run {
                     self.error = NSLocalizedString("Failed to initialize", comment: "Initialization error")
+                    self.currentStep = .initializationError
                 }
             }
         }
@@ -197,7 +202,7 @@ struct PasskeyRegistrationView: View {
                 if !passwordSet {
                     // Cannot create passkey without master password
                     self.error = NSLocalizedString("Please set up PearPass first", comment: "Setup required error")
-                    self.currentStep = .editingForm
+                    self.currentStep = .initializationError
                 } else if !loggedIn {
                     self.viewModel.currentFlow = .masterPassword
                     self.currentStep = .masterPassword
@@ -209,7 +214,7 @@ struct PasskeyRegistrationView: View {
         } catch {
             await MainActor.run {
                 self.error = NSLocalizedString("Failed to check authentication status", comment: "Auth check error")
-                self.currentStep = .editingForm
+                self.currentStep = .initializationError
             }
         }
     }
