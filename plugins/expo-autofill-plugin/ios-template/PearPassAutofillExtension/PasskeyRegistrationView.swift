@@ -340,7 +340,8 @@ struct PasskeyRegistrationView: View {
                         note: formData.note,
                         folder: formData.folder,
                         attachmentMetadata: attachmentMetadata,
-                        passkeyCreatedAt: formData.passkeyCreatedAt
+                        passkeyCreatedAt: formData.passkeyCreatedAt,
+                        recordId: recordId
                     )
                 }
 

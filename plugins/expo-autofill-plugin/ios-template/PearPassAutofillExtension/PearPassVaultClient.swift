@@ -1311,11 +1311,12 @@ import Foundation
         note: String = "",
         folder: String? = nil,
         attachmentMetadata: [[String: String]] = [],
-        passkeyCreatedAt: Int64? = nil
+        passkeyCreatedAt: Int64? = nil,
+        recordId: String? = nil
     ) async throws -> String {
         log("Saving passkey for websites: \(websites)")
 
-        let recordId = UUID().uuidString
+        let recordId = recordId ?? UUID().uuidString
         let now = Int64(Date().timeIntervalSince1970 * 1000)
 
         // Format websites with https:// prefix if not present
@@ -1451,17 +1452,27 @@ import Foundation
     /// Add a file to the active vault (encrypted by vault core)
     /// Files are stored at: record/{recordId}/file/{fileId}
     func activeVaultAddFile(recordId: String, fileId: String, buffer: Data, name: String) async throws {
-        log("Adding file '\(name)' to record \(recordId)")
+        log("Adding file '\(name)' (\(buffer.count) bytes) to record \(recordId)")
 
         let key = "record/\(recordId)/file/\(fileId)"
-        // Convert Data to array of UInt8 for JSON serialization
-        let bufferArray = [UInt8](buffer)
+
+        // Write file to a temp location in the shared app group container
+        // so the Bare worklet can read it from disk (avoids IPC size limits)
+        guard let containerURL = Utils.sharedContainerURL else {
+            throw PearPassVaultError.unknown("Cannot access shared container for temp file")
+        }
+        let tempFileURL = containerURL.appendingPathComponent("temp_upload_\(fileId)")
+        try buffer.write(to: tempFileURL)
+
+        defer {
+            try? FileManager.default.removeItem(at: tempFileURL)
+        }
 
         _ = try await sendRequest(
             command: API.ACTIVE_VAULT_FILE_ADD.rawValue,
             data: [
                 "key": key,
-                "buffer": bufferArray,
+                "filePath": tempFileURL.path,
                 "name": name
             ]
         )
