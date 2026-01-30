@@ -19,6 +19,23 @@ struct ExistingCredentialSelectionView: View {
 
     @State private var showReplaceAlert = false
     @State private var recordToReplace: [String: Any]?
+    @State private var searchText = ""
+
+    private var filteredRecords: [[String: Any]] {
+        if searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+            return matchingRecords
+        }
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        return matchingRecords.filter { record in
+            let data = record["data"] as? [String: Any] ?? [:]
+            let title = data["title"] as? String ?? ""
+            let username = data["username"] as? String ?? ""
+            let websites = data["websites"] as? [String] ?? []
+            return title.localizedCaseInsensitiveContains(query)
+                || username.localizedCaseInsensitiveContains(query)
+                || websites.contains { $0.localizedCaseInsensitiveContains(query) }
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -27,60 +44,92 @@ struct ExistingCredentialSelectionView: View {
             }
 
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 16) {
                     // Header
-                    VStack(spacing: 8) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: Constants.Layout.mediumCornerRadius)
-                                .fill(Constants.Colors.vaultIconBackground)
-                                .frame(width: 64, height: 64)
-
-                            Image(systemName: "person.badge.key.fill")
-                                .font(.system(size: 28))
-                                .foregroundColor(Constants.Colors.primaryGreen)
-                        }
-
+                    VStack(alignment: .leading, spacing: 8) {
                         Text(NSLocalizedString("Save Passkey", comment: "Save passkey title"))
-                            .font(.system(size: 18, weight: .medium))
+                            .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.white)
 
-                        Text(String(format: NSLocalizedString("We found existing logins for %@. You can add the passkey to one of them or create a new login.", comment: "Existing credentials description"), rpId))
-                            .font(.system(size: 13))
+                        Text(matchingRecords.isEmpty
+                            ? NSLocalizedString("We didn't find an existing login for this website. Create a new one or search an item to save your passkey.", comment: "No existing credentials description")
+                            : NSLocalizedString("Choose where to store this Passkey, or create a new item.", comment: "Existing credentials description"))
+                            .font(.system(size: 15))
                             .foregroundColor(.white.opacity(0.7))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 8)
-                    }
-                    .padding(.top, 16)
-                    .padding(.bottom, 8)
-
-                    // Existing credentials list
-                    VStack(spacing: 8) {
-                        ForEach(Array(matchingRecords.enumerated()), id: \.offset) { _, record in
-                            credentialRow(record: record)
-                        }
-                    }
-
-                    // Create new login button
-                    Button(action: onCreateNew) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "plus.circle.fill")
-                            Text(NSLocalizedString("Create new login", comment: "Create new login button"))
-                        }
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: Constants.Layout.cornerRadius)
-                                .fill(Constants.Colors.primaryGreen)
-                        )
                     }
                     .padding(.top, 8)
 
-                    Spacer().frame(height: 30)
+                    // Search bar
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(Color(red: 0xBA/255, green: 0xBA/255, blue: 0xBA/255))
+
+                        ZStack(alignment: .leading) {
+                            if searchText.isEmpty {
+                                Text(NSLocalizedString("Search...", comment: "Search placeholder"))
+                                    .foregroundColor(Color(red: 0xBA/255, green: 0xBA/255, blue: 0xBA/255))
+                            }
+                            TextField("", text: $searchText)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .foregroundColor(Color(red: 0xE0/255, green: 0xE0/255, blue: 0xE0/255))
+                        }
+
+                        if !searchText.isEmpty {
+                            Button(action: { searchText = "" }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(Color(red: 0xBA/255, green: 0xBA/255, blue: 0xBA/255))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .frame(height: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: Constants.Layout.smallCornerRadius)
+                            .fill(Constants.Colors.darkBackground)
+                    )
+
+                    // Existing credentials list or empty state
+                    if filteredRecords.isEmpty {
+                        Spacer().frame(height: 80)
+                        HStack {
+                            Spacer()
+                            Text(NSLocalizedString("No matching login found, search it or create a new login to store this passkey.", comment: "Empty state message"))
+                                .font(.system(size: 14))
+                                .foregroundColor(.white.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: Constants.Layout.smallCornerRadius)
+                                        .fill(Color(red: 0x30/255, green: 0x30/255, blue: 0x30/255))
+                                )
+                            Spacer()
+                        }
+                    } else {
+                        VStack(spacing: 0) {
+                            ForEach(Array(filteredRecords.enumerated()), id: \.offset) { _, record in
+                                credentialRow(record: record)
+                            }
+                        }
+                    }
                 }
                 .padding(.horizontal, Constants.Layout.horizontalPadding)
             }
+
+            // Create new login button pinned to bottom
+            Button(action: onCreateNew) {
+                Text(NSLocalizedString("Create new login", comment: "Create new login button"))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: Constants.Layout.cornerRadius)
+                            .fill(Constants.Colors.primaryGreen)
+                    )
+            }
+            .padding(.horizontal, Constants.Layout.horizontalPadding)
+            .padding(.vertical, 12)
         }
         .alert(
             NSLocalizedString("Replace Passkey", comment: "Replace passkey alert title"),
@@ -104,8 +153,6 @@ struct ExistingCredentialSelectionView: View {
         let data = record["data"] as? [String: Any] ?? [:]
         let title = data["title"] as? String ?? NSLocalizedString("Untitled", comment: "Untitled record")
         let username = data["username"] as? String ?? ""
-        let websites = data["websites"] as? [String] ?? []
-        let firstWebsite = websites.first ?? ""
         let hasPasskey = data["credential"] is [String: Any]
 
         return Button(action: {
@@ -116,49 +163,32 @@ struct ExistingCredentialSelectionView: View {
                 onSelectRecord(record)
             }
         }) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
+            HStack(spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: Constants.Layout.mediumCornerRadius)
+                        .fill(Constants.Colors.credentialBackground)
+                        .frame(width: 45, height: 45)
+
+                    Text(String(title.prefix(1)).uppercased())
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(Constants.Colors.primaryGreen)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.white)
-                    Spacer()
-                    if hasPasskey {
-                        Image(systemName: "person.badge.key.fill")
-                            .font(.system(size: 12))
-                            .foregroundColor(Constants.Colors.primaryGreen.opacity(0.7))
-                    }
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.4))
-                }
 
-                if !username.isEmpty {
-                    HStack(spacing: 6) {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.5))
+                    if !username.isEmpty {
                         Text(username)
                             .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.white.opacity(0.5))
                     }
                 }
 
-                if !firstWebsite.isEmpty {
-                    HStack(spacing: 6) {
-                        Image(systemName: "globe")
-                            .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.5))
-                        Text(firstWebsite)
-                            .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.6))
-                    }
-                }
+                Spacer()
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: Constants.Layout.smallCornerRadius)
-                    .fill(Constants.Colors.credentialBackground)
-            )
+            .padding(.vertical, 8)
         }
     }
 }
