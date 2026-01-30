@@ -359,7 +359,7 @@ struct CredentialsListView: View {
                     let userName = recordData["username"] as? String ?? ""
                     print("CredentialsListView: Detected passkey for rpId: \(rpId), userName: \(userName)")
                     passkeys.append(record)
-                    continue
+                    // Don't continue - also parse as password credential if it has username/password
                 }
             } else {
                 print("CredentialsListView: credential field cast to [String: Any] failed")
