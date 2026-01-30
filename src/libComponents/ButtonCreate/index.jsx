@@ -29,10 +29,15 @@ export const ButtonCreate = ({
   }
 
   return (
-    <Button activeOpacity={0.8} onPress={handlePress} testID={testID}>
+    <Button
+      activeOpacity={0.8}
+      onPress={handlePress}
+      testID={testID}
+      hasIcon={!!Icon}
+    >
       {Icon && <Icon size="21" color={colors.black.mode1} />}
       {children && <ButtonText testID={textTestID}>{children}</ButtonText>}
-      <View></View>
+      {Icon && <View />}
     </Button>
   )
 }
