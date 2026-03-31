@@ -68,6 +68,15 @@ export const Security = () => {
         testIDOff: 'copy-to-clipboard-toggle-off',
         accessibilityLabelOn: t`Copy to clipboard enabled`,
         accessibilityLabelOff: t`Copy to clipboard disabled`
+      },
+      {
+        name: 'haptics',
+        label: t`Haptic feedback`,
+        description: t`Meaningful haptics for important actions`,
+        testIDOn: 'haptics-toggle-on',
+        testIDOff: 'haptics-toggle-off',
+        accessibilityLabelOn: t`Haptic feedback enabled`,
+        accessibilityLabelOff: t`Haptic feedback disabled`
       }
     ]
 
@@ -121,6 +130,10 @@ export const Security = () => {
       }
     }
 
+    if (newRules.haptics !== selectedRules.haptics) {
+      await setIsHapticsEnabled(newRules.haptics)
+    }
+
     setSelectedRules({ ...newRules })
   }
 
@@ -142,7 +155,14 @@ export const Security = () => {
     }
 
     getInitialSettings()
-  }, [isBiometricsEnabled, isPasswordChangeReminderEnabled])
+  }, [isBiometricsEnabled, isPasswordChangeReminderEnabled, isHapticsEnabled])
+
+  useEffect(
+    () => () => {
+      clearTimeout(timeoutRef.current)
+    },
+    []
+  )
 
   useEffect(
     () => () => {
