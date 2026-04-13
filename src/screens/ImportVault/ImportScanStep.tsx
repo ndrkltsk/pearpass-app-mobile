@@ -7,7 +7,7 @@ import {
   InputField
 } from '@tetherto/pearpass-lib-ui-kit'
 import { ContentCopy } from '@tetherto/pearpass-lib-ui-kit/icons'
-import { CameraView } from 'expo-camera'
+import { Camera } from 'react-native-vision-camera'
 import * as Clipboard from 'expo-clipboard'
 import { Dimensions, StyleSheet, View } from 'react-native'
 
@@ -35,10 +35,9 @@ export const ImportScanStep = ({
 
   const {
     hasPermission,
-    isScanning,
-    cameraRef,
+    device,
+    frameProcessor,
     pauseScanning,
-    handleBarCodeScanned,
     requestPermission
   } = useQRScanner({
     onScanned: (data: string) => {
@@ -89,28 +88,25 @@ export const ImportScanStep = ({
           ]}
         >
           <View style={styles.cameraInner}>
-            <CameraView
-              ref={cameraRef}
-              onBarcodeScanned={
-                isScanning && !isLoading ? handleBarCodeScanned : undefined
-              }
-              zoom={0}
-              style={styles.camera}
-              barcodeScannerSettings={{
-                barcodeTypes: ['qr']
-              }}
-            >
-              <View
-                style={[
-                  styles.cameraSpot,
-                  {
-                    width: spotSize,
-                    height: spotSize,
-                    borderColor: theme.colors.colorBorderPrimary
-                  }
-                ]}
-              />
-            </CameraView>
+            {device ? (
+              <Camera
+                device={device}
+                isActive={!isLoading}
+                style={styles.camera}
+                frameProcessor={frameProcessor}
+              >
+                <View
+                  style={[
+                    styles.cameraSpot,
+                    {
+                      width: spotSize,
+                      height: spotSize,
+                      borderColor: theme.colors.colorBorderPrimary
+                    }
+                  ]}
+                />
+              </Camera>
+            ) : null}
           </View>
         </View>
       )}
@@ -175,7 +171,8 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    margin: 16
   },
   cameraSpot: {
     borderWidth: 2,
