@@ -87,6 +87,10 @@ run_prebuild() {
   perl -0777 -i -pe "s/\\n\\s*maven \\{\\n\\s*\\/\\/ All of React Native[^\\n]*\\n\\s*url\\(reactNativeAndroidDir\\)\\n\\s*\\}\\n/\\n/g" android/build.gradle
   perl -i -ne "print unless /credentials-play-services-auth|play-services-auth|googleid|play-services-fido|firebase-messaging/" android/app/build.gradle
   rm -f android/app/debug.keystore
+  # Produce unsigned APKs — F-Droid signs with its own key
+  sed -i.bak 's/signingConfig signingConfigs.debug/signingConfig null/' android/app/build.gradle && rm -f android/app/build.gradle.bak
+  # Remove the now-unused signingConfigs block referencing the deleted keystore
+  perl -0777 -i -pe 's/\s*signingConfigs\s*\{\s*debug\s*\{[^}]*\}\s*\}//' android/app/build.gradle
 }
 
 ensure_java_home() {
@@ -297,12 +301,6 @@ PYSTUB
 -dontwarn com.google.android.datatransport.**
 -dontwarn java.awt.**
 PROGUARD
-  fi
-  if [ ! -f app/debug.keystore ]; then
-    keytool -genkeypair -v -keystore app/debug.keystore \
-      -storepass android -alias androiddebugkey -keypass android \
-      -keyalg RSA -keysize 2048 -validity 10000 \
-      -dname "CN=Android Debug,O=Android,C=US" 2>/dev/null
   fi
   ensure_java_home
   JAVA_HOME="$JAVA_HOME" GRADLE_USER_HOME=/tmp/pearpass-gradle-home ./gradlew :app:clean :app:assembleFdroidRelease --no-daemon -Dorg.gradle.vfs.watch=false -Dorg.gradle.java.installations.auto-download=false -Dorg.gradle.java.installations.auto-detect=false -Dorg.gradle.java.installations.paths="$JAVA_HOME" -Pandroid.enableDependencyInfoInApk=false -Pandroid.enableDependencyInfoInBundle=false -Pandroid.enableProguardInReleaseBuilds=true
