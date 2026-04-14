@@ -12,6 +12,8 @@ import { ImagePreview } from '../../screens/ImagePreview'
 import { ImagePreviewV2 } from '../../screens/ImagePreview/ImagePreviewV2'
 import { ImportVault } from '../../screens/ImportVault'
 import { Intro } from '../../screens/Intro'
+import { MultiSelectDelete } from '../../screens/MultiSelectDelete'
+import { MultiSelectMove } from '../../screens/MultiSelectMove'
 import { Onboarding } from '../../screens/Onboarding'
 import {
   OnboardingV2Autofill,
@@ -107,6 +109,8 @@ export const Navigation = ({ initialRouteName }) => (
     <Stack.Screen name="BlindPeering" component={BlindPeeringSectionV2} />
     <Stack.Screen name="ImportVault" component={ImportVault} />
     <Stack.Screen name="ShareVault" component={ShareVault} />
+    <Stack.Screen name="MultiSelectDelete" component={MultiSelectDelete} />
+    <Stack.Screen name="MultiSelectMove" component={MultiSelectMove} />
     <Stack.Screen name="Feedback" component={Feedback} />
     <Stack.Screen name="ImportItems" component={ImportItems} />
     <Stack.Screen name="Vaults2" component={VaultsV2} />

@@ -6,6 +6,7 @@ import {
   Text,
   Title,
   rawTokens,
+  useBottomSheetClose,
   useTheme
 } from '@tetherto/pearpass-lib-ui-kit'
 import {
@@ -18,16 +19,17 @@ import {
 } from '@tetherto/pearpass-lib-ui-kit/icons'
 import { StyleSheet, View } from 'react-native'
 
-import { useBottomSheet } from '../../context/BottomSheetContext'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
 
 /**
- *
  * @param {Object} props - Component props
- * @param {string} props.vaultId - The unique identifier of the vault
  * @param {string} props.vaultName - The current name of the vault
+ * @param {() => void} [props.onRename] - Callback when rename action is selected
+ * @param {() => void} [props.onPassword] - Callback when set password action is selected
+ * @param {() => void} [props.onMembers] - Callback when manage access action is selected
+ * @param {() => void} [props.onShare] - Callback when share action is selected
+ * @param {() => void} [props.onDelete] - Callback when delete action is selected
  * @returns {JSX.Element} Bottom sheet with vault modification options
- *
  */
 export const BottomSheetVaultAction = ({
   vaultName,
@@ -39,7 +41,7 @@ export const BottomSheetVaultAction = ({
 }) => {
   const { t } = useLingui()
   const { theme } = useTheme()
-  const { collapse } = useBottomSheet()
+  const collapse = useBottomSheetClose()
   const { hapticButtonPrimary } = useHapticFeedback()
 
   const handleAction = () => {

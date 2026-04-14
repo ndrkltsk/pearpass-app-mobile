@@ -30,8 +30,8 @@ import {
 } from '@tetherto/pearpass-lib-ui-kit/icons'
 import { StyleSheet, View } from 'react-native'
 
+import { Layout } from '../../containers/Layout'
 import { ScreenHeader } from '../../containers/ScreenHeader'
-import { ScreenLayout } from '../../containers/ScreenLayout'
 import { isV2 } from '../../utils/designVersion'
 
 export const SettingsV2 = () => {
@@ -164,12 +164,11 @@ export const SettingsV2 = () => {
   }
 
   return (
-    <ScreenLayout
+    <Layout
       scrollable
       style={{ flex: 1 }}
       contentStyle={styles.scrollContent}
       footerStyle={styles.hiddenFooter}
-      containerStyle={{ backgroundColor: theme.colors.colorBackground }}
       header={
         <ScreenHeader
           centerSlot={
@@ -273,7 +272,7 @@ export const SettingsV2 = () => {
           </Text>
         </View>
       )}
-    </ScreenLayout>
+    </Layout>
   )
 }
 

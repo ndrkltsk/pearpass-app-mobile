@@ -38,7 +38,7 @@ import { useCallback, useState } from 'react'
 import { ActivityIndicator, Image, Pressable, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 import { BackScreenHeader } from 'src/containers/ScreenHeader/BackScreenHeader'
-import { ScreenLayout } from 'src/containers/ScreenLayout'
+import { Layout } from 'src/containers/Layout'
 import { useAutoLockContext } from 'src/context/AutoLockContext'
 import { useHapticFeedback } from 'src/hooks/useHapticFeedback'
 import { readFileContent } from '../Settings/TabImport/utils/readFileContent'
@@ -444,7 +444,7 @@ export const ImportItems = () => {
   const passwordField = register('password')
 
   return (
-    <ScreenLayout
+    <Layout
       scrollable
       header={
         <BackScreenHeader title={t`Settings`} onBack={navigation.goBack} />
@@ -574,6 +574,6 @@ export const ImportItems = () => {
           )}
         </View>
       )}
-    </ScreenLayout>
+    </Layout>
   )
 }

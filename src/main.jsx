@@ -18,11 +18,13 @@ import {
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, Text } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { App } from './app/App'
 import { AutoLockTouchCapture } from './components/AutoLockHandler'
 import { AutoLockProvider } from './context/AutoLockContext'
 import { BottomSheetProvider } from './context/BottomSheetContext'
+import { BottomSheetV2Provider } from './context/BottomSheetV2Context'
 import { HapticsProvider } from './context/HapticsContext'
 import { LoadingProvider } from './context/LoadingContext'
 import { ModalProvider } from './context/ModalContext'
@@ -95,23 +97,29 @@ export const Main = () => {
           <HapticsProvider>
             <LoadingProvider>
               <GestureHandlerRootView style={styles.appRoot}>
-                <BottomSheetWrapper>
-                  <VaultProvider>
-                    <SharedFilterProvider>
-                      <NavigationContainer>
-                        <AutoLockProvider>
-                          <AutoLockTouchCapture>
-                            <ModalProvider>
-                              <BottomSheetProvider>
-                                <App />
-                              </BottomSheetProvider>
-                            </ModalProvider>
-                          </AutoLockTouchCapture>
-                        </AutoLockProvider>
-                      </NavigationContainer>
-                    </SharedFilterProvider>
-                  </VaultProvider>
-                </BottomSheetWrapper>
+                <SafeAreaProvider>
+                  <BottomSheetWrapper>
+                    <VaultProvider>
+                      <SharedFilterProvider>
+                        <NavigationContainer>
+                          <AutoLockProvider>
+                            <AutoLockTouchCapture>
+                              <ModalProvider>
+                                <BottomSheetProvider>
+                                  <BottomSheetV2Provider>
+                                    <BottomSheetWrapper>
+                                      <App />
+                                    </BottomSheetWrapper>
+                                  </BottomSheetV2Provider>
+                                </BottomSheetProvider>
+                              </ModalProvider>
+                            </AutoLockTouchCapture>
+                          </AutoLockProvider>
+                        </NavigationContainer>
+                      </SharedFilterProvider>
+                    </VaultProvider>
+                  </BottomSheetWrapper>
+                </SafeAreaProvider>
               </GestureHandlerRootView>
             </LoadingProvider>
           </HapticsProvider>
