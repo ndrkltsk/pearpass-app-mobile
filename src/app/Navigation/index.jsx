@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { DeleteFolderV2 } from 'src/screens/DeleteFolder/DeleteFolderv2'
+import { ExportItems } from 'src/screens/ExportItems'
 import { ImportItems } from 'src/screens/ImportItems'
 
 import {
@@ -126,6 +127,7 @@ export const Navigation = ({ initialRouteName }) => (
     <Stack.Screen name="ImportItems" component={ImportItems} />
     <Stack.Screen name="Vaults2" component={VaultsV2} />
     <Stack.Screen name="MyDevices" component={MyDevices} />
+    <Stack.Screen name="ExportItems" component={ExportItems} />
     <Stack.Screen name="DeleteFolder" component={DeleteFolderV2} />
   </Stack.Navigator>
 )
